@@ -57,16 +57,16 @@ def send_email(to, action, subject, html):
                 send_mail_via_smtp_task.delay(config, payload)
             else:
                 payload['fromname'] = email_from_name
-                key = get_settings()['sendgrid_key']
-                if not key:
-                    print('Sendgrid key not defined')
-                    return
-                headers = {
-                    "Authorization": ("Bearer " + key),
-                    "Content-Type": "application/json"
-                }
-                from .tasks import send_email_task
-                send_email_task.delay(payload, headers)
+                # key = get_settings()['sendgrid_key']
+                # if not key:
+                #     print('Sendgrid key not defined')
+                #     return
+                # headers = {
+                #     "Authorization": ("Bearer " + key),
+                #     "Content-Type": "application/json"
+                # }
+                # from .tasks import send_email_task
+                # send_email_task.delay(payload, headers)
 
         # record_mail(to, action, subject, html)
         mail = Mail(
