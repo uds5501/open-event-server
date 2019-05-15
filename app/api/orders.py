@@ -137,16 +137,6 @@ class OrdersListPost(ResourceList):
 #         if not has_access('is_coorganizer', event_id=data['event']):
 #             TicketingManager.calculate_update_amount(order)
 
-        # send e-mail and notifications if the order status is completed
-        if order.status == 'completed':
-            send_email_to_attendees(order, current_user.id)
-            send_notif_to_attendees(order, current_user.id)
-
-            order_url = make_frontend_url(path='/orders/{identifier}'.format(identifier=order.identifier))
-            for organizer in order.event.organizers:
-                send_notif_ticket_purchase_organizer(organizer, order.invoice_number, order_url, order.event.name,
-                                                     order.identifier)
-
         data['user_id'] = current_user.id
 
     methods = ['POST', ]
@@ -300,7 +290,17 @@ class OrderDetail(ResourceDetail):
         # create pdf tickets.
         create_pdf_tickets_for_holder(order)
 
-        if order.status == 'cancelled':
+        # send e-mail and notifications if the order status is completed
+        if order.status == 'completed':
+            send_email_to_attendees(order, current_user.id)
+            send_notif_to_attendees(order, current_user.id)
+
+            order_url = make_frontend_url(path='/orders/{identifier}'.format(identifier=order.identifier))
+            for organizer in order.event.organizers:
+                send_notif_ticket_purchase_organizer(organizer, order.invoice_number, order_url, order.event.name,
+                                                     order.identifier)
+
+        elif order.status == 'cancelled':
             send_order_cancel_email(order)
             send_notif_ticket_cancel(order)
 
