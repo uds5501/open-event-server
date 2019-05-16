@@ -87,6 +87,8 @@ class OrdersListPost(ResourceList):
             raise ConflictException({'pointer': '/data/attributes/amount'},
                                     "Amount cannot be null for a paid order")
 
+        if not data.get('amount'):
+            data['amount'] = 0
         # Apply discount only if the user is not event admin
         if data.get('discount') and not has_access('is_coorganizer', event_id=data['event']):
             discount_code = safe_query_without_soft_deleted_entries(self, DiscountCode, 'id', data['discount'],
@@ -304,6 +306,15 @@ class OrderDetail(ResourceDetail):
 
             # delete the attendees so that the tickets are unlocked.
             delete_related_attendees_for_order(order)
+
+        elif order.status == 'completed':
+            send_email_to_attendees(order, current_user.id)
+            send_notif_to_attendees(order, current_user.id)
+
+            order_url = make_frontend_url(path='/orders/{identifier}'.format(identifier=order.identifier))
+            for organizer in order.event.organizers:
+                send_notif_ticket_purchase_organizer(organizer, order.invoice_number, order_url, order.event.name,
+                                                     order.identifier)
 
     def before_delete_object(self, order, view_kwargs):
         """
