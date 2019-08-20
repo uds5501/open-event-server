@@ -239,7 +239,8 @@ class EventList(ResourceList):
         modules = Module.query.first()
         validate_event(user, modules, data)
         if data['state'] != 'draft':
-            validate_date(None, data)
+            UnprocessableEntity({'source': 'data/event'},
+                                 "Only draft events can be created initially")
 
     def after_create_object(self, event, data, view_kwargs):
         """
@@ -564,6 +565,9 @@ class EventDetail(ResourceDetail):
         :param view_kwargs:
         :return:
         """
+        print("\n\n\n\n\nOkay, I am awesome\n\n\n\n\n")
+        print("\ndata:", data['state'])
+        print("\nevent:",event.state )
         is_date_updated = (data.get('starts_at') != event.starts_at or data.get('ends_at') != event.ends_at)
         is_draft_published = (event.state == "draft" and data.get('state') == "published")
         is_event_restored = (event.deleted_at and not data.get('deleted_at'))
